@@ -49,6 +49,66 @@ SELECT
 from order_items
 WHERE product_id in (1,4);
 
+-- ________________________________ Aggregrate Window function ___________________________________________
+-- count no.of employees in each departmrnt, total, avg, max, min salary of exag departmrnt
+SELECT
+    e.employee_id,
+    CONCAT(e.first_name," ",e.last_name) as full_name,
+    e.department_id,
+    count(*) over(partition by e.department_id) as emp_per_dep,
+    e.salary,
+    sum(salary) over(partition by e.department_id) as total_salary,
+    round(avg(salary) over(partition by e.department_id),0) as avg_salary,
+    min(salary) over(partition by e.department_id) as min_salary,
+    max(salary) over(partition by e.department_id) as max_salary
+from employees as e;
+
+-- ____________________________ Ranking Window Function ________________________________________________
+-- Row_number()- Assign unique number to each row but can't handle ties
+-- Rank()- Assign rank , handle ties but skips/gaps the number
+-- Dense_rank()- Assign rank , handle ties but don't skips/gaps the number
+-- rank() over(order by row) is must
+
+SELECT
+    e.employee_id,
+    CONCAT(e.first_name," ",e.last_name) as full_name,
+    e.department_id,
+    e.salary,
+   ROW_NUMBER() over(order by salary desc) as row_rank,
+   rank() over(order by salary desc) as norm_rank,
+   dense_rank() over(order by salary desc) as den_rank
+from employees as e;
+
+SELECT
+    e.employee_id,
+    CONCAT(e.first_name," ",e.last_name) as full_name,
+    e.department_id,
+    e.salary,
+   ROW_NUMBER() over(partition by department_id order by salary desc) as row_rank
+   from employees as e;
+  
+-- find the highest sales on each product category
+select *
+from (select category,
+    product_name,
+    RANK() over(partition by category order by price desc) as top
+from products)t where top=1;
+
+-- find least 2 budgeted departments
+select * from(select 
+    department_id,
+    round(sum(salary),0) as totl_budg,
+    ROW_NUMBER() over(order by sum(salary)) as least
+from employees
+GROUP by department_id)t where least<3;
+
+-- _______________________VALUE WINDOW FUNCTION ______________________________
+-- lead(exp, offset, default) returns the next row , order by is must
+-- lag(exp, offset, default) returns the previous row , order by is must
+-- default and offset is optional
+
+-- find employee over employee performance by finding changes in their salary b/w currrent and previous emplyee
+
 
 
 
