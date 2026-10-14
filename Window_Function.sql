@@ -1,3 +1,4 @@
+use company_db;
 -- ------------------------------- WINDOW FUNCTIONS ------------------------------
 -- Perform calculations on specific set of data without loosing the level of rows
 -- It performs ROW level calculations, returns a result for each row
@@ -102,14 +103,36 @@ select * from(select
 from employees
 GROUP by department_id)t where least<3;
 
+-- -- Rank customers based on their orders and their VALUES
+select 
+     customer_id,
+     sum(total_amount),
+     rank() OVER(order by sum(total_amount) desc) as most_loyal
+from orders
+group by customer_id;
+
 -- _______________________VALUE WINDOW FUNCTION ______________________________
 -- lead(exp, offset, default) returns the next row , order by is must
 -- lag(exp, offset, default) returns the previous row , order by is must
 -- default and offset is optional
 
 -- find employee over employee performance by finding changes in their salary b/w currrent and previous emplyee
+SELECT
+    CONCAT(e.first_name," ",e.last_name) as full_name,
+    salary,
+    department_id,
+    LAG(salary,1,0) over(order by salary desc) as sal_dif,
+    lead(salary,1,0) over(order by salary desc) as sal_dif_up
 
+from employees as e;
 
+SELECT
+    CONCAT(e.first_name," ",e.last_name) as full_name,
+    salary,
+    department_id,
+    LAG(salary,1,0) over(partition by department_id order by salary desc) as sal_dif,
+    lead(salary,1,0) over(order by salary desc) as sal_dif_up
+    from employees as e;
 
 
 
